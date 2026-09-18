@@ -81,7 +81,7 @@ Humanize the following draft: [draft]
 Keep its facts and opinions; do not borrow experiences from the sample.
 ```
 
-You can also ask “去掉这段文字的 AI 味，保留技术含义” or “Deslop this diff without changing behavior.” The skill can be selected automatically when the request matches. Ask for comments only if you want a review without file edits. Ordinary feature development and authorship detection are outside its scope.
+You can also ask "Deslop this diff without changing behavior." The skill can be selected automatically when the request matches. Ask for comments only if you want a review without file edits. Ordinary feature development and authorship detection are outside its scope.
 
 ### Example
 
