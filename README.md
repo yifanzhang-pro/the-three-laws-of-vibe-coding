@@ -59,4 +59,4 @@ In Codex:
 $deslop-and-humanize Edit feedback.md to sound direct and natural. Keep every substantive criticism.
 ```
 
-It can also be selected automatically for requests such as “去掉这段文字的 AI 味，保留技术含义” or “Deslop this diff without changing behavior.” Ordinary feature development does not need this skill.
+It can also be selected automatically for requests such as "Deslop this diff without changing behavior." Ordinary feature development does not need this skill.
