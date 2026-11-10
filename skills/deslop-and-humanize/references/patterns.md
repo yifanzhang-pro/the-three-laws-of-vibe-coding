@@ -2,6 +2,21 @@
 
 Use this guide to identify a concrete reading problem, then edit for that problem. It is not a scorecard for deciding who wrote a passage. Frequency alone does not establish a defect, and a convention appropriate to one genre may be distracting in another.
 
+Sections: [where to look first](#where-to-look-first), [announcing the point](#announcing-or-dramatizing-the-point), [contrasts and objections](#manufactured-contrasts-and-objections), [rhythm](#repetitive-rhythm-and-paragraph-shape), [inflated significance](#inflated-significance-and-appended-interpretation), [vague authority](#vague-authority-and-relationships), [wording and actors](#inflated-wording-and-missing-actors), [qualifiers](#qualifiers-and-uncertainty), [punctuation and formatting](#punctuation-and-formatting), [chat residue](#chat-and-drafting-residue), [voice](#voice-without-fabrication). Chinese forms of these problems are in [chinese.md](chinese.md).
+
+## Where to look first
+
+In a long document, filler collects in predictable places. Checking them first finds most of it, and the rest of each section then needs only a normal read.
+
+- The first and last sentence of each paragraph, and the last paragraph of each section. Openers announce and closers repeat.
+- The abstract, introduction, and conclusion, where claims about importance gather.
+- A clause after the final comma that begins with an “-ing” verb. It often interprets a fact the sentence already stated.
+- A sentence with no number, name, mechanism, or condition in it. Check whether it explains or connects, or only decorates.
+- Lists of exactly three, and adjacent paragraphs with the same shape.
+- Captions, table notes, and footnotes. They are edited last and checked least, and a number in them must match the table.
+
+After those, read straight through for the argument. A section can be free of every cue and still bury its point.
+
 ## Announcing or dramatizing the point
 
 A staged opening tells the reader that an explanation is coming: “Let's dive into,” “Here's the thing,” or “先说结论” followed by another introduction. A repeated closer asks for attention after the point is already complete: “That changes everything,” “Read that again,” or “这才是真正的价值.” Start at the explanation or end at the completed point when the extra sentence contributes nothing.

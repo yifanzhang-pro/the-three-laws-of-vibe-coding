@@ -10,9 +10,9 @@ The laws set an order of priorities for AI-assisted development. Here, slop mean
 
 ## Deslop and humanize
 
-[`deslop-and-humanize`](skills/deslop-and-humanize/SKILL.md) turns the laws into an editing workflow for Claude Code and Codex. It handles English and Chinese prose, research papers, feedback, and requested code cleanup. The shared skill is Markdown only, with no tool dependencies or provider-specific frontmatter.
+[`deslop-and-humanize`](skills/deslop-and-humanize/SKILL.md) turns the laws into an editing workflow for Claude Code and Codex. It handles English and Chinese prose, research papers, feedback, commit messages and PR descriptions, and requested code cleanup. The skill is Markdown instructions with no provider-specific frontmatter, plus one optional Python script that uses only the standard library.
 
-It reads for argument and voice before changing individual words. It then checks the revision against the original for lost facts, altered uncertainty, and broken technical notation. A second editorial pass catches repeated endings or other formulaic structure that survived the first edit. The default output is the finished text; intermediate drafts stay internal unless requested.
+It reads for argument and voice before changing individual words. It then checks the revision against the original for lost facts, altered uncertainty, and broken technical notation; for file edits, [`check_fidelity.py`](skills/deslop-and-humanize/scripts/check_fidelity.py) lists the numbers, citation keys, labels, math, and links that differ between the two versions. A second editorial pass catches repeated endings or other formulaic structure that survived the first edit. Pasted text comes back as the finished text alone. A file edit comes back with a short report: what changed, which claims need a source, and which checks ran.
 
 ### What changes and what stays
 
@@ -22,13 +22,22 @@ It reads for argument and voice before changing individual words. It then checks
 | Feedback | Praise sandwiches, duplicate softeners, vague requests | Substantive criticism, warranted praise, and intended politeness |
 | Personal writing and email | Generic phrasing and distracting repetition | The writer's actual opinions, humor, courtesies, and experiences |
 | Documentation | Chat residue, obsolete drafting commentary, empty labels | Current behavior, commands, data, links, and relevant history |
+| Commit messages and PR descriptions | The story of the work, praise, restated diffs, empty headings | What changed, why, and what was actually tested |
 | Code, when requested | Redundant branches, unused scaffolding, unnecessary indirection | Observable behavior, interfaces, boundary checks, and useful comments |
 
 A dash, passive sentence, or three-item list can be the right choice. These are cues to inspect in context, not automatic editing rules. The skill does not determine authorship or promise to bypass AI detectors. It also does not invent details to make a passage sound more personal.
 
 ### Install
 
-Clone this repository, then run the commands for your tool from the repository root:
+With the [`skills` CLI](https://github.com/vercel-labs/skills), which needs Node.js 22.20 or later, one command installs the skill for both tools in your user directory:
+
+```sh
+npx skills add yifanzhang-pro/the-three-laws-of-vibe-coding --skill deslop-and-humanize -g -a claude-code -a codex
+```
+
+Leave out `-g` to install into the current project. `npx skills update deslop-and-humanize` fetches a newer version later.
+
+Without Node, clone the repository and link the skill folder, so that `git pull` updates the installed skill:
 
 ```sh
 git clone https://github.com/yifanzhang-pro/the-three-laws-of-vibe-coding.git
@@ -38,40 +47,40 @@ cd the-three-laws-of-vibe-coding
 Claude Code:
 
 ```sh
-mkdir -p "$HOME/.claude/skills"
-if [ ! -e "$HOME/.claude/skills/deslop-and-humanize" ] && [ ! -L "$HOME/.claude/skills/deslop-and-humanize" ]; then
-  cp -R skills/deslop-and-humanize "$HOME/.claude/skills/"
-else
-  echo 'Skill already exists; review it before replacing it.'
-fi
+mkdir -p "$HOME/.claude/skills" && ln -s "$PWD/skills/deslop-and-humanize" "$HOME/.claude/skills/deslop-and-humanize"
 ```
 
 Codex:
 
 ```sh
-mkdir -p "$HOME/.agents/skills"
-if [ ! -e "$HOME/.agents/skills/deslop-and-humanize" ] && [ ! -L "$HOME/.agents/skills/deslop-and-humanize" ]; then
-  cp -R skills/deslop-and-humanize "$HOME/.agents/skills/"
-else
-  echo 'Skill already exists; review it before replacing it.'
-fi
+mkdir -p "$HOME/.agents/skills" && ln -s "$PWD/skills/deslop-and-humanize" "$HOME/.agents/skills/deslop-and-humanize"
 ```
 
-For a project-only installation, copy the whole skill folder into that project's `.claude/skills/` for Claude Code or `.agents/skills/` for Codex instead. Keep `references/` alongside `SKILL.md`. These locations follow the [Claude Code](https://code.claude.com/docs/en/skills) and [Codex](https://developers.openai.com/codex/skills) documentation. Restart your session if the new skill does not appear.
+`ln -s` refuses to replace an existing skill of the same name; look at what is there before removing it. To pin a copy, or to install into one project, use `cp -R skills/deslop-and-humanize <dir>` with `.claude/skills/` for Claude Code or `.agents/skills/` for Codex as the directory. Keep `references/` and `scripts/` alongside `SKILL.md`. These locations follow the [Claude Code](https://code.claude.com/docs/en/skills) and [Codex](https://developers.openai.com/codex/skills) documentation. Restart your session if the new skill does not appear.
 
 ### Use
 
-In Claude Code:
+In Claude Code, `/deslop-and-humanize` followed by the target; in Codex, `$deslop-and-humanize`:
 
 ```text
 /deslop-and-humanize Edit the conclusion in paper.tex. Preserve the claims, citations, and limitations.
 ```
 
-In Codex:
-
 ```text
 $deslop-and-humanize Edit feedback.md to sound direct and natural. Keep every substantive criticism.
 ```
+
+The request sets the mode, and the skill does not go further than the request:
+
+| You write | You get |
+| --- | --- |
+| The skill name alone | An edit of the text you last pasted, or of the prose in your uncommitted diff |
+| “Proofread” or “light” | Word-level fixes; sentences and structure stay |
+| “Deslop,” “humanize,” “polish,” 润色, 去AI味 | Sentence and paragraph edits inside the passage |
+| “Rewrite” or “restructure” | Permission to move and merge material |
+| “Review” or “comments only” | Comments on quoted phrases, and no file edits |
+| “Write the commit message,” “draft the abstract” | New text written under the same rules |
+| “Deslop this diff without changing behavior” | Code cleanup with the existing checks run |
 
 For voice matching, include a short sample and identify it separately from the text to edit:
 
@@ -81,7 +90,35 @@ Humanize the following draft: [draft]
 Keep its facts and opinions; do not borrow experiences from the sample.
 ```
 
-You can also ask "Deslop this diff without changing behavior." The skill can be selected automatically when the request matches. Ask for comments only if you want a review without file edits. Ordinary feature development and authorship detection are outside its scope.
+The skill can also be selected automatically when a request matches. Ordinary feature development and authorship detection are outside its scope.
+
+### Use it across a repository
+
+Agents forget a skill that nothing in the repository mentions. To have every prose edit in a project go through it, put this in the project's `AGENTS.md`, or in `CLAUDE.md` for Claude Code alone:
+
+```markdown
+## Writing
+
+Use the `deslop-and-humanize` skill for every prose edit and every new piece of prose: papers, docs, READMEs, issues, PR descriptions, and commit messages. If the skill is not installed, read `SKILL.md` and the files it points to at
+https://github.com/yifanzhang-pro/the-three-laws-of-vibe-coding/tree/master/skills/deslop-and-humanize
+before editing.
+```
+
+Add the project's own vocabulary and build commands below it. The skill reads the project's agent instructions first and treats them as overriding its general guidance.
+
+### Check an edit yourself
+
+The fidelity script also works by hand on any two versions of a file, or on a file you have edited since the last commit:
+
+```sh
+python3 skills/deslop-and-humanize/scripts/check_fidelity.py before.md after.md
+```
+
+```sh
+python3 skills/deslop-and-humanize/scripts/check_fidelity.py --git paper/intro.tex
+```
+
+It prints the numbers, citation keys, labels, cross-references, math, code, links, and capitalized names found in one version and not the other, and the qualifier words whose counts changed. It exits with status 1 when anything differs. It cannot see a paraphrase that changes a claim, so a clean run is a floor and not a proof.
 
 ### Example
 
@@ -93,13 +130,15 @@ After:
 
 > Across three runs, shared memory reduced duplicate experiments by 18% relative to independent agents. Total compute was not controlled, so these results do not establish an efficiency gain at equal compute.
 
-This is a fictional example. The revision keeps the measurement and the missing control; it does not claim an 18% efficiency gain. See the [worked examples](skills/deslop-and-humanize/references/examples.md) for Chinese prose, feedback, voice matching, and cases that should remain unchanged.
+This is a fictional example. The revision keeps the measurement and the missing control; it does not claim an 18% efficiency gain. See the [worked examples](skills/deslop-and-humanize/references/examples.md) for Chinese prose, feedback, voice matching, a commit message, and cases that should remain unchanged.
 
 ## Read the guidance
 
 - [Skill instructions](skills/deslop-and-humanize/SKILL.md): scope, fidelity, editing, review, and delivery.
 - [Prose patterns](skills/deslop-and-humanize/references/patterns.md): recurring problems and the exceptions that prevent over-editing.
+- [Chinese prose](skills/deslop-and-humanize/references/chinese.md): translationese, official register, and punctuation, with the cases to leave alone.
 - [Worked examples](skills/deslop-and-humanize/references/examples.md): before/after passages with preservation notes.
+- [Fidelity check](skills/deslop-and-humanize/scripts/check_fidelity.py): the script described above.
 - [Project page](https://yifanzhang-pro.github.io/the-three-laws-of-vibe-coding/): the laws and an overview of the skill.
 
 ## Acknowledgments and editorial choices
