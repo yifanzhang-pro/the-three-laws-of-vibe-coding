@@ -2,6 +2,15 @@
 
 These examples are fictional. Their numbers and findings must not be carried into another document. Each revision preserves the supplied evidence and uncertainty. The notes explain the editorial decision and the information that must survive; they are not text to append to a user's document.
 
+Read the cases that match the document in front of you:
+
+- Research and technical prose: [research conclusion](#research-conclusion), [technical notation](#preserve-technical-notation-during-a-prose-edit), [a comparison list](#a-comparison-cannot-silently-lose-an-item), [an attribution problem](#an-attribution-problem-should-stay-visible), [a staged contrast](#remove-a-staged-contrast-without-losing-the-mechanism)
+- Chinese: [technical prose](#chinese-technical-prose), [translationese in a message](#chinese-translationese-in-a-message)
+- Feedback, email, and voice: [feedback](#feedback), [email courtesy](#courtesy-belongs-in-an-email), [voice from a sample](#preserve-voice-without-inventing-an-experience)
+- Repository prose: [commit message](#a-commit-message-says-what-changed-and-why), [report after a file edit](#report-after-a-file-edit)
+- Restraint: [a clear sentence](#a-clear-sentence-needs-no-edit), [a light edit](#a-light-edit-stays-light), [a necessary code comment](#a-code-comment-can-be-necessary)
+- Code: [cleanup with evidence](#code-cleanup-needs-evidence-of-equivalence)
+
 ## Research conclusion
 
 Before:
@@ -53,7 +62,6 @@ if request_id in completed:
 ```
 
 Keep the guard and explanation unless the surrounding contract has changed. They describe required behavior. Removing them because the branch looks defensive would be a functional change.
-
 
 ## Remove a staged contrast without losing the mechanism
 
@@ -160,3 +168,79 @@ def is_enabled(config):
 ```
 
 The contract matters. If the field can contain other values, this rewrite changes the return value or type. Inspect that contract rather than assuming the shorter version is equivalent. Run the relevant existing behavior checks when applying the change.
+
+## Chinese translationese in a message
+
+Before:
+
+> 王老师您好，非常感谢您对我们的论文进行了详细的审阅。对于您所提出的关于实验设置方面的问题，我们已经在修订稿中进行了相应的补充说明。值得一提的是，我们新增了 3 组对比实验。如果您还有任何其他的问题的话，请随时与我们联系。
+
+After:
+
+> 王老师您好，非常感谢您详细审阅我们的论文。您提出的实验设置问题，我们已在修订稿中补充说明，并新增了 3 组对比实验。如果还有其他问题，请随时联系我们。
+
+The salutation, the thanks, 您, the count of experiments, and the closing invitation all remain; the invitation is a real request from one person to another. The edit removes 进行 with a noun, 对于…方面, 的话, and an opener that announced the next sentence. It does not make the message casual.
+
+## A light edit stays light
+
+Request: “Fix the grammar, nothing else.”
+
+Before:
+
+> Our approach, which leverage a shared cache, reduce average latency from 120 ms to 95 ms at batch size 8. It is worth noting that this represent a meaningful improvement.
+
+After:
+
+> Our approach, which leverages a shared cache, reduces average latency from 120 ms to 95 ms at batch size 8. It is worth noting that this represents a meaningful improvement.
+
+Three verbs now agree with their subjects. The second sentence is filler and “leverages” could be “uses,” but the user asked for grammar. Mention the sentence in one line after the revision if it seems worth their attention; do not cut it.
+
+## A commit message says what changed and why
+
+Draft written after a long debugging session:
+
+```text
+Fix critical caching bug and significantly improve robustness
+
+After extensive investigation, I discovered that the cache was not
+properly handling retries. This commit comprehensively addresses the
+issue by introducing a robust idempotency check, ensuring a seamless
+experience for users.
+
+- Updated cache.py
+- Added tests
+- All tests pass
+```
+
+Revision, in a repository whose history uses short imperative subjects:
+
+```text
+Return cached response for retried request IDs
+
+The upstream service retries requests that already completed. Each
+retry ran the handler again and wrote a duplicate row. Look up the
+request ID in the completed map first and return the stored response.
+
+Tested: pytest tests/test_cache.py (2 new cases for retried IDs)
+```
+
+The subject names the behavior. The body gives the cause and the fix, which the diff alone does not explain. The investigation, the praise, and the file list are gone, because the diff already shows which files changed. “All tests pass” became the command that ran; if nothing ran, the line would say so or be absent.
+
+## Report after a file edit
+
+Request: “Deslop `sections/results.tex`.”
+
+```text
+Edited: sections/results.tex, paragraphs 1–4 and the caption of Table 2
+Changes:
+- Cut two staged openers and the summary sentence that repeated paragraph 3
+- Replaced “demonstrates the superiority of” with the measured difference already given in the sentence
+- Merged the two sentences on the missing compute control so the limitation sits next to the result
+Flags:
+- Line 41, “widely regarded as the standard baseline”: no citation. Kept as written; needs a source or a narrower claim.
+- Line 58 says 18% and Table 2 says 17.6%. Left both; one of them needs to change.
+Checks: check_fidelity.py --git sections/results.tex reported one number missing (the “2” in “2 key insights,” from a deleted sentence) and no citation, label, or math changes; tectonic build passed with no undefined references.
+Not done: the abstract in main.tex repeats the sentence at line 58; left untouched because it was outside the request.
+```
+
+The report tells the author where to look in the diff and what still needs a decision. It does not list every changed word, restate the request, or say the text is now publication-ready. The flags are in the report and not in the `.tex` file.
